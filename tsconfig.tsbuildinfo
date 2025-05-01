@@ -1,0 +1,1 @@
+{"root":["./src/main.ts","./src/vite-env.d.ts","./src/composables/usetasks.ts","./src/app.vue","./src/components/addtask.vue","./src/components/addtohome.vue","./src/components/taskitems.vue","./src/components/tasklist.vue"],"errors":true,"version":"5.7.3"}
