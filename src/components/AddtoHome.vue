@@ -1,6 +1,6 @@
 <template>
-    <p v-show="!_app_installed" class="add-to-home">
-        Add This App to Your Home Screen > 
+    <p v-show="_install_ready && !_app_installed" class="add-to-home">
+        Install this app to homescreen >
         <button @click="installPWA">Install</button>
     </p>
 
@@ -16,8 +16,10 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 const
     _install_ready = ref(false),
     _app_installed = ref(false);
-let deferredPrompt: Event | null = null
+let _install_prompt = ref(null);
+//let deferredPrompt: Event | null = null
 
+//Detect PWA installable
 onMounted(() => {
     window.addEventListener('beforeinstallprompt', savePrompt)
     window.addEventListener('appinstalled', handleAppInstalled)
@@ -28,31 +30,52 @@ onBeforeUnmount(()=>{
     window.removeEventListener("appinstalled", handleAppInstalled);
 })
 
-const savePrompt = (e: Event) => {
-    e.preventDefault();
-    deferredPrompt = e as any //save the event, to activate it later
+const savePrompt = (event: Event) => {
+    console.log("some_event triggered");
+    event.preventDefault(); //prevent mobile prompt
+    //deferredPrompt = e as any //save the event, to activate it later
+    _install_prompt.value = event as any;
     _install_ready.value = true //Notify UI that the app can be installed
 }
 
+
+
+// const installPWA = async () => {
+//     if(!deferredPrompt) return
+
+//     const promptEvent = deferredPrompt as any
+//     promptEvent.prompt() //trigger the installation prompt to the user
+
+//     //const result = await promptEvent.userChoice
+//     const { outcome } = await promptEvent.userChoice  //userChoice: Returns a promise that resolves to an object like { outcome: "accepted" | "dismissed" }
+
+//     if(outcome === 'accepted') {
+//         console.log('PWA installed')
+//     } else {
+//         console.log('PWA install dismissed')
+//     }
+// }
+
 const installPWA = async () => {
-    if(!deferredPrompt) return
+    if(!_install_prompt.value) return;
 
-    const promptEvent = deferredPrompt as any
-    promptEvent.prompt() //trigger the installation prompt to the user
+    const promptEvent = _install_prompt.value as any;
+    promptEvent.prompt(); //trigger the installation prompt to the user
 
-    //const result = await promptEvent.userChoice
-    const { outcome } = await promptEvent.userChoice  //userChoice: Returns a promise that resolves to an object like { outcome: "accepted" | "dismissed" }
+    const { outcome } = await promptEvent.userChoice //userChoice: Returns a promise that resolves to an object like { outcome: "accepted" | "dismissed" }
 
     if(outcome === 'accepted') {
         console.log('PWA installed')
     } else {
         console.log('PWA install dismissed')
     }
+
 }
 
 const handleAppInstalled = () => {
-    deferredPrompt = null
-    _app_installed.value = true
+    //deferredPrompt = null
+    _install_prompt.value = null;
+    _app_installed.value = true;
 }
 
 </script>
